@@ -1,0 +1,29 @@
+{
+    "manifest_version": 3,
+    "name": "CUNY Schedule Helper",
+    "version": "1.0.0",
+    "description": "Enhances CUNYfirst course registration with professor ratings, textbook costs, and seat availability.",
+    "permissions": [
+        "storage",
+        "activeTab"
+    ],
+    "host_permissions": [
+        "*://*.cuny.edu/*"
+    ],
+    "content_scripts": [
+        {
+            "matches": [
+                "*://*.cuny.edu/*"
+            ],
+            "js": [
+                "content.js"
+            ]
+        }
+    ],
+    "action": {
+        "default_popup": "index.html"
+    },
+    "icons": {
+        "32": "icon32.png"
+    }
+}
