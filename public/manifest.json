@@ -1,27 +1,35 @@
 {
     "manifest_version": 3,
-    "name": "CUNY Schedule Helper",
+    "name": "CUNY Scheduler Helper",
     "version": "1.0.0",
-    "description": "Enhances CUNYfirst course registration with professor ratings, textbook costs, and seat availability.",
+    "description": "Shows professor ratings and reviews when hovering over courses in the CUNY Schedule Builder.",
     "permissions": [
-        "storage",
-        "activeTab"
+        "storage"
     ],
     "host_permissions": [
-        "*://*.cuny.edu/*"
+        "*://*.cuny.edu/*",
+        "*://www.ratemyprofessors.com/*"
     ],
+    "background": {
+        "service_worker": "background.js",
+        "type": "module"
+    },
     "content_scripts": [
         {
             "matches": [
-                "*://*.cuny.edu/*"
+                "*://sb.cunyfirst.cuny.edu/*"
             ],
             "js": [
                 "content.js"
-            ]
+            ],
+            "run_at": "document_idle"
         }
     ],
     "action": {
-        "default_popup": "index.html"
+        "default_popup": "index.html",
+        "default_icon": {
+            "32": "icon32.png"
+        }
     },
     "icons": {
         "32": "icon32.png"
