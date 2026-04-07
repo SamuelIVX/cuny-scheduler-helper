@@ -2,6 +2,9 @@ export const SELECTORS = {
   // Each course card in the legend/results panel
   courseRow: '.course_box',
 
+  // The colored header bar at the top of each course card (carries the bc* class)
+  courseHeader: '.course_header',
+
   // The element containing the instructor name (identified by its title attribute)
   instructorCell: 'div[title="Instructor(s)"]',
 
@@ -13,3 +16,5 @@ export const SELECTORS = {
 }
 
 export const SKIP_NAMES = new Set(['staff', 'tba', 'to be announced', ''])
+
+export const HIGHLIGHT_FALLBACK_RGB = '147, 153, 178' // neutral grey-blue

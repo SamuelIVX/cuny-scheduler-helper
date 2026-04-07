@@ -95,7 +95,7 @@ export class TooltipManager {
     document.body.appendChild(this.host)
   }
 
-  show(data: ProfessorData, event: MouseEvent | Element) {
+  show(data: ProfessorData, event: MouseEvent | Element, rgb?: string) {
     this.init()
     if (this.hideTimer) {
       clearTimeout(this.hideTimer)
@@ -121,7 +121,7 @@ export class TooltipManager {
       wrapper.setAttribute('data-wrapper', '1')
       this.shadow!.appendChild(wrapper)
     }
-    wrapper.innerHTML = buildHTML(data)
+    wrapper.innerHTML = buildHTML(data, rgb)
 
     this.host!.style.display = 'block'
     if (!this.isPinned) this.reposition()
@@ -131,7 +131,6 @@ export class TooltipManager {
     if (this.hideTimer) clearTimeout(this.hideTimer)
     this.hideTimer = setTimeout(() => {
       if (this.host) this.host.style.display = 'none'
-      this.isPinned = false
     }, delayMs)
   }
 

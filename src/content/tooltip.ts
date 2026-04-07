@@ -27,12 +27,16 @@ function escapeHTML(str: string): string {
     .replace(/'/g, '&#39;')
 }
 
-export function buildHTML(data: ProfessorData): string {
+export function buildHTML(data: ProfessorData, rgb?: string): string {
+  const reviewStyle = rgb
+    ? `background: linear-gradient(rgba(${rgb}, 0.12), rgba(${rgb}, 0.12)), #181825;`
+    : ''
+
   const reviewsHTML = data.recentReviews
     .map((r) => {
       const date = r.date ? new Date(r.date).toLocaleDateString() : ''
       return `
-        <div class="review">
+        <div class="review" style="${reviewStyle}">
           <div class="review-meta">
             ${r.class ? `<span class="review-class">${escapeHTML(r.class)}</span>` : ''}
             ${r.grade ? `<span class="review-grade" style="color:${gradeColor(r.grade)}">Grade: ${escapeHTML(String(r.grade))}</span>` : ''}
@@ -45,19 +49,31 @@ export function buildHTML(data: ProfessorData): string {
     .join('')
 
   const takeAgain =
-    data.wouldTakeAgainPercent !== null ? `${data.wouldTakeAgainPercent}%` : 'N/A'
+    data.wouldTakeAgainPercent !== null ? `${data.wouldTakeAgainPercent.toFixed(2)}%` : 'N/A'
+
+  const cardStyle = rgb
+    ? `background: linear-gradient(rgba(${rgb}, 0.18), rgba(${rgb}, 0.18)), #28283e; border-color: rgba(${rgb}, 0.7);`
+    : ''
+  const headerStyle = rgb
+    ? `background: linear-gradient(rgba(${rgb}, 0.22), rgba(${rgb}, 0.22)), #1e1e30; border-bottom: 1px solid rgba(${rgb}, 0.4); padding: 6px 8px; margin: -12px -12px 8px; border-radius: 10px 10px 0 0;`
+    : ''
+  const statsStyle = rgb
+    ? `background: linear-gradient(rgba(${rgb}, 0.12), rgba(${rgb}, 0.12)), #1e1e30;`
+    : ''
+  const nameStyle = rgb ? `color: rgb(${rgb});` : ''
+  const deptStyle = rgb ? `color: rgba(${rgb}, 0.75);` : ''
 
   return `
-    <div class="card">
-      <div class="header">
-        <div class="name">${escapeHTML(data.name)}</div>
-        ${data.department ? `<div class="department">${escapeHTML(data.department)}</div>` : ''}
+    <div class="card" style="${cardStyle}">
+      <div class="header" style="${headerStyle}">
+        <div class="name" style="${nameStyle}">${escapeHTML(data.name)}</div>
+        ${data.department ? `<div class="department" style="${deptStyle}">${escapeHTML(data.department)}</div>` : ''}
         ${data.school ? `<div class="school">${escapeHTML(data.school)}</div>` : ''}
       </div>
-      <div class="stats">
+      <div class="stats" style="${statsStyle}">
         <div class="stat">
           <div class="stat-value" style="color:${ratingColor(data.avgRating)}">
-            ${data.avgRating ?? 'N/A'}
+            ${data.avgRating?.toFixed(2) ?? 'N/A'}
           </div>
           <div class="stat-label">Rating</div>
         </div>
