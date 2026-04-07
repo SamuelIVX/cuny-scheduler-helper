@@ -12,7 +12,7 @@
   font-size: 12px;
   line-height: 1.4;
 }
-.header { margin-bottom: 8px; }
+.header { margin-bottom: 8px; cursor: grab; }
 .name { font-size: 14px; font-weight: 700; color: #cba6f7; }
 .department { font-size: 11px; color: #a6e3a1; margin-top: 1px; }
 .school { font-size: 10px; color: #6c7086; margin-top: 1px; }
@@ -33,6 +33,7 @@
   text-transform: uppercase;
   letter-spacing: 0.4px;
 }
+.reviews { margin-top: 8px; }
 .reviews-label {
   font-size: 10px;
   font-weight: 600;
@@ -73,6 +74,7 @@
 }
 .review-class { color: #89b4fa; }
 .review-grade { color: #a6e3a1; }
+.review-date { color: #6c7086; font-size: 10px; }
 .review-comment { margin: 0; font-size: 11px; color: #bac2de; }
 .footer {
   margin-top: 8px;

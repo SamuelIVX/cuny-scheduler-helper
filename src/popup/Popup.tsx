@@ -1,16 +1,28 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import './popup.css'
 
 export default function Popup() {
   const [clearing, setClearing] = useState(false)
   const [cleared, setCleared] = useState(false)
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current)
+    }
+  }, [])
 
   async function clearCache() {
     setClearing(true)
-    await chrome.storage.local.clear()
-    setClearing(false)
-    setCleared(true)
-    setTimeout(() => setCleared(false), 2000)
+    try {
+      await chrome.storage.local.clear()
+      setCleared(true)
+      timerRef.current = setTimeout(() => setCleared(false), 2000)
+    } catch {
+      // storage.local.clear() failed; button returns to idle state via finally
+    } finally {
+      setClearing(false)
+    }
   }
 
   return (

@@ -10,19 +10,27 @@ function ratingColor(rating: number | null): string {
   return '#f38ba8'
 }
 
+function escapeHTML(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
 function buildHTML(data: ProfessorData): string {
   const reviewsHTML = data.recentReviews
-    .slice(0)
     .map((r) => {
       const date = r.date ? new Date(r.date).toLocaleDateString() : ''
       return `
         <div class="review">
           <div class="review-meta">
-            ${r.class ? `<span class="review-class">${r.class}</span>` : ''}
-            ${r.grade ? `<span class="review-grade">Grade: ${r.grade}</span>` : ''}
+            ${r.class ? `<span class="review-class">${escapeHTML(r.class)}</span>` : ''}
+            ${r.grade ? `<span class="review-grade">Grade: ${escapeHTML(String(r.grade))}</span>` : ''}
             ${date ? `<span class="review-date">${date}</span>` : ''}
           </div>
-          <p class="review-comment">${r.comment || 'No comment left.'}</p>
+          <p class="review-comment">${r.comment ? escapeHTML(r.comment) : 'No comment left.'}</p>
         </div>
       `
     })
@@ -34,9 +42,9 @@ function buildHTML(data: ProfessorData): string {
   return `
     <div class="card">
       <div class="header">
-        <div class="name">${data.name}</div>
-        ${data.department ? `<div class="department">${data.department}</div>` : ''}
-        ${data.school ? `<div class="school">${data.school}</div>` : ''}
+        <div class="name">${escapeHTML(data.name)}</div>
+        ${data.department ? `<div class="department">${escapeHTML(data.department)}</div>` : ''}
+        ${data.school ? `<div class="school">${escapeHTML(data.school)}</div>` : ''}
       </div>
       <div class="stats">
         <div class="stat">
@@ -79,6 +87,27 @@ export class TooltipManager {
   private hideTimer: ReturnType<typeof setTimeout> | null = null
   private lastMouseX = 0
   private lastMouseY = 0
+  private isDragging = false
+  private dragOffsetX = 0
+  private dragOffsetY = 0
+  private isPinned = false
+
+  private onDragMove = (e: MouseEvent) => {
+    if (!this.isDragging || !this.host) return
+    const tw = this.host.offsetWidth
+    const th = this.host.offsetHeight
+    const left = Math.max(0, Math.min(e.clientX - this.dragOffsetX, window.innerWidth - tw))
+    const top = Math.max(0, Math.min(e.clientY - this.dragOffsetY, window.innerHeight - th))
+    this.host.style.left = `${left}px`
+    this.host.style.top = `${top}px`
+  }
+
+  private onDragEnd = () => {
+    this.isDragging = false
+    if (this.host) this.host.style.cursor = ''
+    document.removeEventListener('mousemove', this.onDragMove)
+    document.removeEventListener('mouseup', this.onDragEnd)
+  }
 
   private init() {
     if (this.host) return
@@ -98,11 +127,29 @@ export class TooltipManager {
         this.hideTimer = null
       }
     })
-    this.host.addEventListener('mouseleave', () => this.hide())
+    this.host.addEventListener('mouseleave', () => {
+      if (!this.isDragging) this.hide()
+    })
     // Track mouse position for tooltip positioning
     this.host.addEventListener('mousemove', (e: MouseEvent) => {
       this.lastMouseX = e.clientX
       this.lastMouseY = e.clientY
+    })
+    this.host.addEventListener('mousedown', (e: MouseEvent) => {
+      if (e.button !== 0) return
+      const inHeader = e.composedPath().some(
+        (el) => el instanceof Element && el.classList?.contains('header')
+      )
+      if (!inHeader) return
+      this.isDragging = true
+      this.isPinned = true
+      const rect = this.host!.getBoundingClientRect()
+      this.dragOffsetX = e.clientX - rect.left
+      this.dragOffsetY = e.clientY - rect.top
+      this.host!.style.cursor = 'grabbing'
+      e.preventDefault()
+      document.addEventListener('mousemove', this.onDragMove)
+      document.addEventListener('mouseup', this.onDragEnd)
     })
     this.shadow = this.host.attachShadow({ mode: 'open' })
     const style = document.createElement('style')
@@ -118,15 +165,17 @@ export class TooltipManager {
       this.hideTimer = null
     }
 
-    // Extract mouse position from event
-    if (event instanceof MouseEvent) {
-      this.lastMouseX = event.clientX
-      this.lastMouseY = event.clientY
-    } else if (event instanceof Element) {
-      // Fallback: use element center if not a mouse event
-      const rect = event.getBoundingClientRect()
-      this.lastMouseX = rect.left + rect.width / 2
-      this.lastMouseY = rect.top + rect.height / 2
+    // Only reposition if the tooltip hasn't been pinned by dragging
+    if (!this.isPinned) {
+      if (event instanceof MouseEvent) {
+        this.lastMouseX = event.clientX
+        this.lastMouseY = event.clientY
+      } else if (event instanceof Element) {
+        // Fallback: use element center if not a mouse event
+        const rect = event.getBoundingClientRect()
+        this.lastMouseX = rect.left + rect.width / 2
+        this.lastMouseY = rect.top + rect.height / 2
+      }
     }
 
     let wrapper = this.shadow!.querySelector('div[data-wrapper]')
@@ -138,7 +187,7 @@ export class TooltipManager {
     wrapper.innerHTML = buildHTML(data)
 
     this.host!.style.display = 'block'
-    this.reposition()
+    if (!this.isPinned) this.reposition()
   }
 
   hide(delayMs = 150) {

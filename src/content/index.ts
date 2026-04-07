@@ -24,11 +24,8 @@ let debounceTimer: ReturnType<typeof setTimeout> | null = null
 const style = document.createElement('style')
 style.textContent = `
   .cuny-helper-highlight {
-    background-color: rgba(168, 85, 247, 0.25) !important;
-    border-color: rgba(168, 85, 247, 0.8) !important;
-    border-width: 2px !important;
-    border-style: solid !important;
-    box-shadow: 0 0 8px rgba(168, 85, 247, 0.6) !important;
+    background-color: rgba(200, 150, 255, 0.15) !important;
+    box-shadow: inset 0 0 0 2px rgba(200, 150, 255, 0.4) !important;
   }
 `
 document.head.appendChild(style)
@@ -66,7 +63,7 @@ function onRowEnter(e: MouseEvent) {
           return
         }
         if (response?.success && response.data) {
-          tooltip.show(response.data, e)
+          tooltip.show(response.data, row)
         }
       })
     } catch (err) {
