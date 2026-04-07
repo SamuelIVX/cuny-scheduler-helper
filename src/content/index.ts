@@ -94,8 +94,6 @@ function attachListeners() {
   })
 }
 
-console.log('[CUNY Helper] content script loaded')
-
 // Re-attach whenever CUNY dynamically injects new course rows (AJAX pagination etc.)
 const observer = new MutationObserver(attachListeners)
 observer.observe(document.body, { childList: true, subtree: true })

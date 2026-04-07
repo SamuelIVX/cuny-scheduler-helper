@@ -194,6 +194,7 @@ export class TooltipManager {
     if (this.hideTimer) clearTimeout(this.hideTimer)
     this.hideTimer = setTimeout(() => {
       if (this.host) this.host.style.display = 'none'
+      this.isPinned = false
     }, delayMs)
   }
 
@@ -217,7 +218,9 @@ export class TooltipManager {
       left = this.lastMouseX - tw - 12
     }
 
-    this.host!.style.top = `${top}px`
-    this.host!.style.left = `${left}px`
+    const maxTop = Math.max(0, window.innerHeight - th)
+    const maxLeft = Math.max(0, window.innerWidth - tw)
+    this.host!.style.top = `${Math.min(Math.max(top, 0), maxTop)}px`
+    this.host!.style.left = `${Math.min(Math.max(left, 0), maxLeft)}px`
   }
 }

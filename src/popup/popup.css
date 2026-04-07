@@ -65,3 +65,7 @@
   opacity: 0.5;
   cursor: default;
 }
+
+.btn:hover:not(:disabled) {
+  background: #45475a;
+}
