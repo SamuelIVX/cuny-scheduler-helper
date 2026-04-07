@@ -1,13 +1,21 @@
 import type { ProfessorData } from '../types'
-import STYLES from './tooltip.css?inline'
-
-const HOST_ID = 'cuny-helper-tooltip-host'
 
 function ratingColor(rating: number | null): string {
   if (rating === null) return '#888'
   if (rating >= 4) return '#a6e3a1'
   if (rating >= 3) return '#f9e2af'
   return '#f38ba8'
+}
+
+function gradeColor(grade: string): string {
+  const g = grade.trim().toUpperCase()
+  if (g.startsWith('A')) return '#a6e3a1' // green
+  if (g.startsWith('B')) return '#cfe090' // yellow-green
+  if (g.startsWith('C')) return '#f9e2af' // yellow
+  if (g.startsWith('D')) return '#fab387' // orange
+  if (g === 'F' || g.startsWith('F')) return '#f38ba8' // red
+  if (g === 'NOT SURE YET') return '#9399b2' // neutral
+  return '#6c7086' // muted for W, INC, etc.
 }
 
 function escapeHTML(str: string): string {
@@ -19,15 +27,19 @@ function escapeHTML(str: string): string {
     .replace(/'/g, '&#39;')
 }
 
-function buildHTML(data: ProfessorData): string {
+export function buildHTML(data: ProfessorData, rgb?: string): string {
+  const reviewStyle = rgb
+    ? `background: linear-gradient(rgba(${rgb}, 0.12), rgba(${rgb}, 0.12)), #181825;`
+    : ''
+
   const reviewsHTML = data.recentReviews
     .map((r) => {
       const date = r.date ? new Date(r.date).toLocaleDateString() : ''
       return `
-        <div class="review">
+        <div class="review" style="${reviewStyle}">
           <div class="review-meta">
             ${r.class ? `<span class="review-class">${escapeHTML(r.class)}</span>` : ''}
-            ${r.grade ? `<span class="review-grade">Grade: ${escapeHTML(String(r.grade))}</span>` : ''}
+            ${r.grade ? `<span class="review-grade" style="color:${gradeColor(r.grade)}">Grade: ${escapeHTML(String(r.grade))}</span>` : ''}
             ${date ? `<span class="review-date">${date}</span>` : ''}
           </div>
           <p class="review-comment">${r.comment ? escapeHTML(r.comment) : 'No comment left.'}</p>
@@ -37,19 +49,31 @@ function buildHTML(data: ProfessorData): string {
     .join('')
 
   const takeAgain =
-    data.wouldTakeAgainPercent !== null ? `${data.wouldTakeAgainPercent}%` : 'N/A'
+    data.wouldTakeAgainPercent !== null ? `${data.wouldTakeAgainPercent.toFixed(2)}%` : 'N/A'
+
+  const cardStyle = rgb
+    ? `background: linear-gradient(rgba(${rgb}, 0.18), rgba(${rgb}, 0.18)), #28283e; border-color: rgba(${rgb}, 0.7);`
+    : ''
+  const headerStyle = rgb
+    ? `background: linear-gradient(rgba(${rgb}, 0.22), rgba(${rgb}, 0.22)), #1e1e30; border-bottom: 1px solid rgba(${rgb}, 0.4); padding: 6px 8px; margin: -12px -12px 8px; border-radius: 10px 10px 0 0;`
+    : ''
+  const statsStyle = rgb
+    ? `background: linear-gradient(rgba(${rgb}, 0.12), rgba(${rgb}, 0.12)), #1e1e30;`
+    : ''
+  const nameStyle = rgb ? `color: rgb(${rgb});` : ''
+  const deptStyle = rgb ? `color: rgba(${rgb}, 0.75);` : ''
 
   return `
-    <div class="card">
-      <div class="header">
-        <div class="name">${escapeHTML(data.name)}</div>
-        ${data.department ? `<div class="department">${escapeHTML(data.department)}</div>` : ''}
+    <div class="card" style="${cardStyle}">
+      <div class="header" style="${headerStyle}">
+        <div class="name" style="${nameStyle}">${escapeHTML(data.name)}</div>
+        ${data.department ? `<div class="department" style="${deptStyle}">${escapeHTML(data.department)}</div>` : ''}
         ${data.school ? `<div class="school">${escapeHTML(data.school)}</div>` : ''}
       </div>
-      <div class="stats">
+      <div class="stats" style="${statsStyle}">
         <div class="stat">
           <div class="stat-value" style="color:${ratingColor(data.avgRating)}">
-            ${data.avgRating ?? 'N/A'}
+            ${data.avgRating?.toFixed(2) ?? 'N/A'}
           </div>
           <div class="stat-label">Rating</div>
         </div>
@@ -78,149 +102,4 @@ function buildHTML(data: ProfessorData): string {
       </div>
     </div>
   `
-}
-
-
-export class TooltipManager {
-  private host: HTMLElement | null = null
-  private shadow: ShadowRoot | null = null
-  private hideTimer: ReturnType<typeof setTimeout> | null = null
-  private lastMouseX = 0
-  private lastMouseY = 0
-  private isDragging = false
-  private dragOffsetX = 0
-  private dragOffsetY = 0
-  private isPinned = false
-
-  private onDragMove = (e: MouseEvent) => {
-    if (!this.isDragging || !this.host) return
-    const tw = this.host.offsetWidth
-    const th = this.host.offsetHeight
-    const left = Math.max(0, Math.min(e.clientX - this.dragOffsetX, window.innerWidth - tw))
-    const top = Math.max(0, Math.min(e.clientY - this.dragOffsetY, window.innerHeight - th))
-    this.host.style.left = `${left}px`
-    this.host.style.top = `${top}px`
-  }
-
-  private onDragEnd = () => {
-    this.isDragging = false
-    if (this.host) this.host.style.cursor = ''
-    document.removeEventListener('mousemove', this.onDragMove)
-    document.removeEventListener('mouseup', this.onDragEnd)
-  }
-
-  private init() {
-    if (this.host) return
-    this.host = document.createElement('div')
-    this.host.id = HOST_ID
-    Object.assign(this.host.style, {
-      position: 'fixed',
-      zIndex: '2147483647',
-      display: 'none',
-      top: '0',
-      left: '0',
-    })
-    // Allow mouse interaction so the user can scroll reviews inside the tooltip
-    this.host.addEventListener('mouseenter', () => {
-      if (this.hideTimer) {
-        clearTimeout(this.hideTimer)
-        this.hideTimer = null
-      }
-    })
-    this.host.addEventListener('mouseleave', () => {
-      if (!this.isDragging) this.hide()
-    })
-    // Track mouse position for tooltip positioning
-    this.host.addEventListener('mousemove', (e: MouseEvent) => {
-      this.lastMouseX = e.clientX
-      this.lastMouseY = e.clientY
-    })
-    this.host.addEventListener('mousedown', (e: MouseEvent) => {
-      if (e.button !== 0) return
-      const inHeader = e.composedPath().some(
-        (el) => el instanceof Element && el.classList?.contains('header')
-      )
-      if (!inHeader) return
-      this.isDragging = true
-      this.isPinned = true
-      const rect = this.host!.getBoundingClientRect()
-      this.dragOffsetX = e.clientX - rect.left
-      this.dragOffsetY = e.clientY - rect.top
-      this.host!.style.cursor = 'grabbing'
-      e.preventDefault()
-      document.addEventListener('mousemove', this.onDragMove)
-      document.addEventListener('mouseup', this.onDragEnd)
-    })
-    this.shadow = this.host.attachShadow({ mode: 'open' })
-    const style = document.createElement('style')
-    style.textContent = STYLES
-    this.shadow.appendChild(style)
-    document.body.appendChild(this.host)
-  }
-
-  show(data: ProfessorData, event: MouseEvent | Element) {
-    this.init()
-    if (this.hideTimer) {
-      clearTimeout(this.hideTimer)
-      this.hideTimer = null
-    }
-
-    // Only reposition if the tooltip hasn't been pinned by dragging
-    if (!this.isPinned) {
-      if (event instanceof MouseEvent) {
-        this.lastMouseX = event.clientX
-        this.lastMouseY = event.clientY
-      } else if (event instanceof Element) {
-        // Fallback: use element center if not a mouse event
-        const rect = event.getBoundingClientRect()
-        this.lastMouseX = rect.left + rect.width / 2
-        this.lastMouseY = rect.top + rect.height / 2
-      }
-    }
-
-    let wrapper = this.shadow!.querySelector('div[data-wrapper]')
-    if (!wrapper) {
-      wrapper = document.createElement('div')
-      wrapper.setAttribute('data-wrapper', '1')
-      this.shadow!.appendChild(wrapper)
-    }
-    wrapper.innerHTML = buildHTML(data)
-
-    this.host!.style.display = 'block'
-    if (!this.isPinned) this.reposition()
-  }
-
-  hide(delayMs = 150) {
-    if (this.hideTimer) clearTimeout(this.hideTimer)
-    this.hideTimer = setTimeout(() => {
-      if (this.host) this.host.style.display = 'none'
-      this.isPinned = false
-    }, delayMs)
-  }
-
-  private reposition() {
-    // Temporarily show offscreen to measure
-    this.host!.style.top = '-9999px'
-    this.host!.style.left = '-9999px'
-
-    const tw = this.host!.offsetWidth || 320
-    const th = this.host!.offsetHeight || 250
-
-    // Position tooltip to the right and below cursor
-    let top = this.lastMouseY + 12
-    let left = this.lastMouseX + 12
-
-    // Adjust if tooltip goes off-screen
-    if (top + th > window.innerHeight) {
-      top = this.lastMouseY - th - 12
-    }
-    if (left + tw > window.innerWidth) {
-      left = this.lastMouseX - tw - 12
-    }
-
-    const maxTop = Math.max(0, window.innerHeight - th)
-    const maxLeft = Math.max(0, window.innerWidth - tw)
-    this.host!.style.top = `${Math.min(Math.max(top, 0), maxTop)}px`
-    this.host!.style.left = `${Math.min(Math.max(left, 0), maxLeft)}px`
-  }
 }

@@ -1,42 +1,41 @@
 import type { MessageRequest, MessageResponse } from '../types'
-import { TooltipManager } from './tooltip'
-
-const SELECTORS = {
-  // Each course card in the legend/results panel
-  courseRow: '.course_box',
-
-  // The element containing the instructor name (identified by its title attribute)
-  instructorCell: 'div[title="Instructor(s)"]',
-
-  // The element containing the college name (used to improve RMP school matching)
-  schoolCell: '.campus_block',
-
-  // The h4 that contains the course code (e.g. "CSC 490")
-  courseTitle: 'h4.course_title',
-}
-
-const SKIP_NAMES = new Set(['staff', 'tba', 'to be announced', ''])
+import { TooltipManager } from './tooltip-manager'
+import { SELECTORS, SKIP_NAMES, HIGHLIGHT_FALLBACK_RGB } from './constants'
 
 const tooltip = new TooltipManager()
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
-
-// Inject highlight styles
-const style = document.createElement('style')
-style.textContent = `
-  .cuny-helper-highlight {
-    background-color: rgba(200, 150, 255, 0.15) !important;
-    box-shadow: inset 0 0 0 2px rgba(200, 150, 255, 0.4) !important;
-  }
-`
-document.head.appendChild(style)
 
 function extractText(el: Element | null): string {
   return el?.textContent?.trim() ?? ''
 }
 
+// Returns "r, g, b" from the course header's background, or null if unreadable.
+function getCourseRGB(row: Element): string | null {
+  const header = row.querySelector(SELECTORS.courseHeader)
+  if (!header) return null
+  const bg = getComputedStyle(header).backgroundColor
+  const match = bg.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/)
+  return match ? `${match[1]}, ${match[2]}, ${match[3]}` : null
+}
+
+
+function applyHighlight(row: Element, rgb: string) {
+  const el = row as HTMLElement
+  el.style.transition = 'background-color 0.15s ease, box-shadow 0.15s ease'
+  el.style.backgroundColor = `rgba(${rgb}, 0.15)`
+  el.style.boxShadow = `inset 3px 0 0 rgba(${rgb}, 0.8)`
+}
+
+function removeHighlight(row: Element) {
+  const el = row as HTMLElement
+  el.style.backgroundColor = ''
+  el.style.boxShadow = ''
+}
+
 function onRowEnter(e: MouseEvent) {
   const row = e.currentTarget as Element
-  row.classList.add('cuny-helper-highlight')
+  const rgb = getCourseRGB(row) ?? HIGHLIGHT_FALLBACK_RGB
+  applyHighlight(row, rgb)
 
   const instructorEl = row.querySelector(SELECTORS.instructorCell)
   const professorName = extractText(instructorEl)
@@ -60,21 +59,22 @@ function onRowEnter(e: MouseEvent) {
     try {
       chrome.runtime.sendMessage(request, (response: MessageResponse) => {
         if (chrome.runtime?.lastError) {
+          console.error('Error sending message to background script:', chrome.runtime.lastError)
           return
         }
         if (response?.success && response.data) {
-          tooltip.show(response.data, row)
+          tooltip.show(response.data, row, rgb)
         }
       })
-    } catch (err) {
-      // Silently fail
+    } catch (error) {
+      console.error('Error sending message to background script:', error)
     }
   }, 400)
 }
 
 function onRowLeave(e: MouseEvent) {
   const row = e.currentTarget as Element
-  row.classList.remove('cuny-helper-highlight')
+  removeHighlight(row)
 
   if (debounceTimer) {
     clearTimeout(debounceTimer)
@@ -86,7 +86,6 @@ function onRowLeave(e: MouseEvent) {
 function attachListeners() {
   const rows = document.querySelectorAll<HTMLElement>(SELECTORS.courseRow)
   rows.forEach((row) => {
-    // Avoid attaching duplicate listeners
     if (row.dataset.cunyHelperBound) return
     row.dataset.cunyHelperBound = '1'
     row.addEventListener('mouseenter', onRowEnter)

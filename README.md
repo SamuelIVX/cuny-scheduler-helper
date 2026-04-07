@@ -1,75 +1,81 @@
-# React + TypeScript + Vite
+# CUNY Scheduler Helper
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A Chrome extension that surfaces RateMyProfessors data directly inside the CUNY Schedule Builder (no tab-switching required).
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## The Problem
 
-## React Compiler
+When registering for classes on the CUNY Schedule Builder, students have no way to evaluate professors without leaving the page. Checking RateMyProfessors for each instructor, especially across multiple sections is tedious and breaks the registration flow.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+## The Solution
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+CUNY Scheduler Helper injects a tooltip into the Schedule Builder that appears when you hover over any course row. It instantly shows the professor's rating, difficulty, "would take again" percentage, and recent student reviews, which are pulled live from RateMyProfessors and cached locally so repeat lookups are instant.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+**Key features:**
+- Tooltip appears on hover with rating, difficulty, take-again %, and review count
+- Up to 5 recent reviews with class, grade, and comment
+- Color-coded ratings (green / yellow / red)
+- Draggable tooltip — pin it anywhere on screen and it stays while you browse other courses
+- 1-hour local cache to avoid redundant network requests
+- Smart school matching that prefers CUNY-affiliated results from RMP
+- Skips TBA / Staff rows automatically
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+---
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Extension platform | Chrome Extensions Manifest V3 |
+| Build tool | Vite |
+| Language | TypeScript |
+| Popup UI | React 19 |
+| Styling | CSS (Catppuccin Mocha theme) |
+| Style isolation | Shadow DOM |
+| Data source | RateMyProfessors GraphQL API |
+| Caching | `chrome.storage.local` |
+
+---
+
+## Project Structure
+
+```bash
+src/
+  background/
+    index.ts          # Service worker — fetches from RMP API, manages cache
+  content/
+    index.ts          # Content script — attaches hover listeners to course rows
+    constants.ts      # DOM selectors and skip-name list
+    tooltip.ts        # Builds the tooltip HTML from professor data
+    tooltip-manager.ts # Manages tooltip positioning, drag, and show/hide
+    tooltip.css       # Tooltip card styles
+  popup/
+    Popup.tsx         # Extension popup — shows info and cache clear button
+    popup.css         # Popup styles
+  types.ts            # Shared TypeScript interfaces
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## How It Works
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+1. The content script (`src/content/index.ts`) attaches `mouseenter` / `mouseleave` listeners to every `.course_box` element on `sb.cunyfirst.cuny.edu`
+2. On hover, it extracts the instructor name, school, and course code from the DOM
+3. After a 400ms debounce it sends a `FETCH_PROFESSOR` message to the background service worker
+4. The background script checks `chrome.storage.local` for a cached result; on a miss it queries the RateMyProfessors GraphQL API and caches the response for 1 hour
+5. The content script receives the professor data and renders it in a Shadow DOM tooltip via `TooltipManager`
+6. The tooltip can be dragged by its header and stays pinned at that position while the user browses other courses
+
+---
+
+## Development
+
+```bash
+npm install
+npm run build      # outputs to dist/
 ```
-# cuny-scheduler-helper
-# cuny-scheduler-helper
+
+Load the `dist/` folder as an unpacked extension in `chrome://extensions`.

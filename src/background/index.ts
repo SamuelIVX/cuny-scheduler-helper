@@ -41,11 +41,9 @@ const SEARCH_QUERY = `
   }
 `
 
-async function fetchProfessorFromRMP(
-  professorName: string,
-  schoolName: string
-): Promise<ProfessorData | null> {
+async function fetchProfessorFromRMP(professorName: string, schoolName: string): Promise<ProfessorData | null> {
   let response: Response
+
   try {
     response = await fetch(RMP_GRAPHQL_URL, {
       method: 'POST',
@@ -104,11 +102,7 @@ async function fetchProfessorFromRMP(
   }
 }
 
-async function getProfessor(
-  professorName: string,
-  schoolName: string,
-  courseCode: string
-): Promise<ProfessorData | null> {
+async function getProfessor(professorName: string, schoolName: string, courseCode: string): Promise<ProfessorData | null> {
   const cacheKey = `rmp::${professorName.toLowerCase()}::${schoolName.toLowerCase()}::${courseCode.toLowerCase()}`
 
   const cached = await chrome.storage.local.get(cacheKey)
