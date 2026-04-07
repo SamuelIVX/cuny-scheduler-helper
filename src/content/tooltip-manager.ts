@@ -34,6 +34,15 @@ export class TooltipManager {
 
   private init() {
     if (this.host) return
+
+    // Check for existing host from previous script injection
+    const existing = document.getElementById(HOST_ID)
+    if (existing) {
+      this.host = existing
+      this.shadow = existing.shadowRoot
+      return
+    }
+
     this.host = document.createElement('div')
     this.host.id = HOST_ID
     Object.assign(this.host.style, {
@@ -43,6 +52,7 @@ export class TooltipManager {
       top: '0',
       left: '0',
     })
+
     // Allow mouse interaction so the user can scroll reviews inside the tooltip
     this.host.addEventListener('mouseenter', () => {
       if (this.hideTimer) {
@@ -50,14 +60,17 @@ export class TooltipManager {
         this.hideTimer = null
       }
     })
+
     this.host.addEventListener('mouseleave', () => {
       if (!this.isDragging) this.hide()
     })
+
     // Track mouse position for tooltip positioning
     this.host.addEventListener('mousemove', (e: MouseEvent) => {
       this.lastMouseX = e.clientX
       this.lastMouseY = e.clientY
     })
+
     this.host.addEventListener('mousedown', (e: MouseEvent) => {
       if (e.button !== 0) return
       const inHeader = e.composedPath().some(
@@ -74,6 +87,7 @@ export class TooltipManager {
       document.addEventListener('mousemove', this.onDragMove)
       document.addEventListener('mouseup', this.onDragEnd)
     })
+
     this.shadow = this.host.attachShadow({ mode: 'open' })
     const style = document.createElement('style')
     style.textContent = STYLES

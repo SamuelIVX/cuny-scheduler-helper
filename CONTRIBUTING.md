@@ -14,8 +14,8 @@ Thanks for your interest in contributing! This is a small Chrome extension built
 ### Local Setup
 
 ```bash
-git clone https://github.com/SamuelIVX/cunyschedulerhelper.git
-cd cunyschedulerhelper
+git clone https://github.com/SamuelIVX/cuny-scheduler-helper.git
+cd cuny-scheduler-helper
 npm install
 npm run build
 ```

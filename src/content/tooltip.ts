@@ -7,6 +7,17 @@ function ratingColor(rating: number | null): string {
   return '#f38ba8'
 }
 
+function gradeColor(grade: string): string {
+  const g = grade.trim().toUpperCase()
+  if (g.startsWith('A')) return '#a6e3a1' // green
+  if (g.startsWith('B')) return '#cfe090' // yellow-green
+  if (g.startsWith('C')) return '#f9e2af' // yellow
+  if (g.startsWith('D')) return '#fab387' // orange
+  if (g === 'F' || g.startsWith('F')) return '#f38ba8' // red
+  if (g === 'NOT SURE YET') return '#9399b2' // neutral
+  return '#6c7086' // muted for W, INC, etc.
+}
+
 function escapeHTML(str: string): string {
   return str
     .replace(/&/g, '&amp;')
@@ -24,7 +35,7 @@ export function buildHTML(data: ProfessorData): string {
         <div class="review">
           <div class="review-meta">
             ${r.class ? `<span class="review-class">${escapeHTML(r.class)}</span>` : ''}
-            ${r.grade ? `<span class="review-grade">Grade: ${escapeHTML(String(r.grade))}</span>` : ''}
+            ${r.grade ? `<span class="review-grade" style="color:${gradeColor(r.grade)}">Grade: ${escapeHTML(String(r.grade))}</span>` : ''}
             ${date ? `<span class="review-date">${date}</span>` : ''}
           </div>
           <p class="review-comment">${r.comment ? escapeHTML(r.comment) : 'No comment left.'}</p>

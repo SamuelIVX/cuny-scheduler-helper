@@ -12,7 +12,7 @@ When registering for classes on the CUNY Schedule Builder, students have no way 
 
 ## The Solution
 
-CUNY Scheduler Helper injects a tooltip into the Schedule Builder that appears when you hover over any course row. It instantly shows the professor's rating, difficulty, "would take again" percentage, and recent student reviews which is pulled live from RateMyProfessors and cached locally so repeat lookups are instant.
+CUNY Scheduler Helper injects a tooltip into the Schedule Builder that appears when you hover over any course row. It instantly shows the professor's rating, difficulty, "would take again" percentage, and recent student reviews, which are pulled live from RateMyProfessors and cached locally so repeat lookups are instant.
 
 **Key features:**
 - Tooltip appears on hover with rating, difficulty, take-again %, and review count
@@ -32,7 +32,7 @@ CUNY Scheduler Helper injects a tooltip into the Schedule Builder that appears w
 | Extension platform | Chrome Extensions Manifest V3 |
 | Build tool | Vite |
 | Language | TypeScript |
-| Popup UI | React 18 |
+| Popup UI | React 19 |
 | Styling | CSS (Catppuccin Mocha theme) |
 | Style isolation | Shadow DOM |
 | Data source | RateMyProfessors GraphQL API |
