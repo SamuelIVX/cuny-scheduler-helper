@@ -1,0 +1,97 @@
+{
+    "extends": [
+        "config:recommended",
+        ":semanticCommits",
+        "helpers:pinGitHubActionDigests"
+    ],
+    "timezone": "America/New_York",
+    "schedule": [
+        "every weekday"
+    ],
+    "osvVulnerabilityAlerts": true,
+    "prHourlyLimit": 6,
+    "rangeStrategy": "auto",
+    "platformAutomerge": true,
+    "labels": [
+        "dependencies"
+    ],
+    "dependencyDashboard": true,
+    "enabledManagers": [
+        "npm",
+        "github-actions"
+    ],
+    "packageRules": [
+        {
+            "matchManagers": [
+                "github-actions"
+            ],
+            "groupName": "github-actions",
+            "automerge": true,
+            "automergeType": "pr"
+        },
+        {
+            "matchManagers": [
+                "npm"
+            ],
+            "matchDepTypes": [
+                "devDependencies"
+            ],
+            "matchUpdateTypes": [
+                "minor",
+                "patch"
+            ],
+            "automerge": true,
+            "automergeType": "pr"
+        },
+        {
+            "matchManagers": [
+                "npm"
+            ],
+            "matchDepTypes": [
+                "dependencies"
+            ],
+            "matchUpdateTypes": [
+                "patch"
+            ],
+            "automerge": true,
+            "automergeType": "pr"
+        },
+        {
+            "matchManagers": [
+                "npm"
+            ],
+            "groupName": "types",
+            "matchPackageNames": [
+                "/^@types\\//"
+            ]
+        },
+        {
+            "matchManagers": [
+                "npm"
+            ],
+            "groupName": "linting",
+            "matchPackageNames": [
+                "/^eslint/",
+                "/^@eslint\\//",
+                "/^typescript-eslint/"
+            ]
+        },
+        {
+            "matchManagers": [
+                "npm"
+            ],
+            "matchDatasources": [
+                "npm"
+            ],
+            "separateMajorMinor": true
+        }
+    ],
+    "lockFileMaintenance": {
+        "enabled": true,
+        "automerge": true,
+        "automergeType": "pr",
+        "schedule": [
+            "at any time"
+        ]
+    }
+}
