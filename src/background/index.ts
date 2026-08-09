@@ -41,6 +41,46 @@ const SEARCH_QUERY = `
   }
 `
 
+type RmpRatingNode = {
+  comment?: string | null
+  date?: string | null
+  class?: string | null
+  grade?: string | null
+  helpfulRating?: number | null
+  clarityRating?: number | null
+  difficultyRating?: number | null
+}
+
+type RmpTeacherNode = {
+  firstName?: string | null
+  lastName?: string | null
+  department?: string | null
+  avgRatingRounded?: number | null
+  numRatings?: number | null
+  wouldTakeAgainPercentRounded?: number | null
+  avgDifficultyRounded?: number | null
+  school?: {
+    name?: string | null
+  } | null
+  ratings?: {
+    edges?: Array<{ node: RmpRatingNode }>
+  } | null
+}
+
+type RmpTeacherEdge = {
+  node: RmpTeacherNode
+}
+
+type RmpSearchResponse = {
+  data?: {
+    search?: {
+      teachers?: {
+        edges?: RmpTeacherEdge[]
+      }
+    }
+  }
+}
+
 async function fetchProfessorFromRMP(professorName: string, schoolName: string): Promise<ProfessorData | null> {
   let response: Response
 
@@ -65,8 +105,8 @@ async function fetchProfessorFromRMP(professorName: string, schoolName: string):
     return null
   }
 
-  const json = await response.json()
-  const edges: any[] = json?.data?.search?.teachers?.edges ?? []
+  const json = (await response.json()) as RmpSearchResponse
+  const edges = json.data?.search?.teachers?.edges ?? []
 
   if (edges.length === 0) return null
 
@@ -89,7 +129,7 @@ async function fetchProfessorFromRMP(professorName: string, schoolName: string):
     department: node.department ?? '',
     school: node.school?.name ?? '',
     recentReviews: (node.ratings?.edges ?? []).map(
-      (r: any): Review => ({
+      (r): Review => ({
         comment: r.node.comment ?? '',
         date: r.node.date ?? '',
         class: r.node.class ?? '',
