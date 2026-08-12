@@ -10,7 +10,8 @@
     "module": "esnext",
     "types": [
       "vite/client",
-      "chrome"
+      "chrome",
+      "@testing-library/jest-dom"
     ],
     "skipLibCheck": true,
     /* Bundler mode */
