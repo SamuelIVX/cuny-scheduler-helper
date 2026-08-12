@@ -55,13 +55,23 @@ describe('Popup', () => {
   })
 
   it('disables the button while clearing', async () => {
+    let resolveClear: () => void = () => {}
+    chromeMock.storage.local.clear.mockImplementation(
+      () =>
+        new Promise<void>((resolve) => {
+          resolveClear = resolve
+        }),
+    )
+
     render(<Popup />)
     fireEvent.click(screen.getByRole('button', { name: 'Clear Cache' }))
 
     expect(screen.getByText('Clearing…')).toBeInTheDocument()
+    expect(screen.getByRole('button')).toBeDisabled()
 
     await act(async () => {
-      await Promise.resolve()
+      resolveClear()
     })
+    expect(screen.getByRole('button')).not.toBeDisabled()
   })
 })

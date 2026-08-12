@@ -92,16 +92,32 @@ describe('TooltipManager', () => {
 
     Object.defineProperty(host, 'offsetWidth', { value: 320 })
     Object.defineProperty(host, 'offsetHeight', { value: 250 })
+    const before = { left: host.style.left, top: host.style.top }
 
-    const down = new MouseEvent('mousedown', { bubbles: true, button: 0, clientX: 110, clientY: 120 })
+    const down = new MouseEvent('mousedown', {
+      bubbles: true,
+      composed: true,
+      button: 0,
+      clientX: 110,
+      clientY: 120,
+    })
     header.dispatchEvent(down)
+    expect(host.style.cursor).toBe('grabbing')
 
     const move = new MouseEvent('mousemove', { clientX: 160, clientY: 170 })
     document.dispatchEvent(move)
+    expect(host.style.left).not.toBe(before.left)
+    expect(host.style.top).not.toBe(before.top)
+
     const up = new MouseEvent('mouseup')
     document.dispatchEvent(up)
-
     expect(host.style.cursor).toBe('')
+
+    // A pinned tooltip is not repositioned by a later show
+    const pinned = { left: host.style.left, top: host.style.top }
+    manager.show(data, new MouseEvent('mouseenter', { clientX: 500, clientY: 500 }))
+    expect(host.style.left).toBe(pinned.left)
+    expect(host.style.top).toBe(pinned.top)
   })
 
   it('does not start dragging on non-header mousedown', () => {
@@ -111,7 +127,13 @@ describe('TooltipManager', () => {
     const body = document.createElement('div')
     host.shadowRoot!.appendChild(body)
 
-    const down = new MouseEvent('mousedown', { bubbles: true, button: 0, clientX: 110, clientY: 120 })
+    const down = new MouseEvent('mousedown', {
+      bubbles: true,
+      composed: true,
+      button: 0,
+      clientX: 110,
+      clientY: 120,
+    })
     body.dispatchEvent(down)
 
     expect(host.style.cursor).not.toBe('grabbing')
