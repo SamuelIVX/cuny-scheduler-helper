@@ -9,11 +9,16 @@ import { SELECTORS, SKIP_NAMES, HIGHLIGHT_FALLBACK_RGB } from './constants'
 const tooltip = new TooltipManager()
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
 
+/** Trims an element's text content, or "" when missing. */
 function extractText(el: Element | null): string {
   return el?.textContent?.trim() ?? ''
 }
 
-// Returns "r, g, b" from the course header's background, or null if unreadable.
+/**
+ * Reads the course header background as an `"r, g, b"` triplet for highlights.
+ * @param row - A Schedule Builder `.course_box` element.
+ * @returns Digits-only RGB string, or null if the header color is unreadable.
+ */
 function getCourseRGB(row: Element): string | null {
   const header = row.querySelector(SELECTORS.courseHeader)
   if (!header) return null
