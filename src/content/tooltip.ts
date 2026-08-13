@@ -22,6 +22,15 @@ function gradeColor(grade: string): string {
   return '#6c7086' // muted for W, INC, etc.
 }
 
+/**
+ * Escapes HTML special characters before interpolating into tooltip markup.
+ * SECURITY: review/professor strings are untrusted third-party text — always
+ * escape before `innerHTML` assignment.
+ * @param str - Raw text that may contain markup characters.
+ * @returns Escaped text safe for HTML text/attribute contexts.
+ * @example
+ * escapeHTML(`<script>`) // => "&lt;script&gt;"
+ */
 function escapeHTML(str: string): string {
   return str
     .replace(/&/g, '&amp;')
@@ -33,12 +42,17 @@ function escapeHTML(str: string): string {
 
 /**
  * Builds the shadow-DOM tooltip markup for a professor.
+ * SECURITY: output is assigned to `innerHTML`; review text is escaped, but
+ * `rgb` is trusted CSS and must not come from unvalidated user input.
  * @param data - Normalized RMP professor payload.
  * @param rgb - Optional course-header RGB triplet (`"r, g, b"` digits only).
  *   Callers must pass a value from `getCourseRGB` or `HIGHLIGHT_FALLBACK_RGB`;
  *   the string is interpolated into CSS unescaped, so arbitrary input is unsafe.
  * @returns HTML string safe for assignment to `innerHTML` (review text escaped;
  *   `rgb` is trusted per the precondition above).
+ * @example
+ * buildHTML(professorData, "147, 153, 178");
+ * // => HTML string with escaped name/comments and optional tint
  */
 export function buildHTML(data: ProfessorData, rgb?: string): string {
   const reviewStyle = rgb
