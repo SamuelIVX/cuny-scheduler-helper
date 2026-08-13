@@ -1,6 +1,10 @@
+/**
+ * Extension popup UI — explains the hover flow and clears the local RMP cache.
+ */
 import { useState, useEffect, useRef } from 'react'
 import './popup.css'
 
+/** Popup root component mounted from `src/main.tsx`. */
 export default function Popup() {
   const [clearing, setClearing] = useState(false)
   const [cleared, setCleared] = useState(false)

@@ -1,3 +1,7 @@
+/**
+ * Content script injected into CUNY Schedule Builder — highlights course rows,
+ * debounces hover lookups, and asks the background worker for RMP data.
+ */
 import type { MessageRequest, MessageResponse } from '../types'
 import { TooltipManager } from './tooltip-manager'
 import { SELECTORS, SKIP_NAMES, HIGHLIGHT_FALLBACK_RGB } from './constants'

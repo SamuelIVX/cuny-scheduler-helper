@@ -1,3 +1,7 @@
+/**
+ * Pure HTML builders for the RMP tooltip card (stats + recent reviews).
+ * Escapes user-facing strings before interpolation into innerHTML.
+ */
 import type { ProfessorData } from '../types'
 
 function ratingColor(rating: number | null): string {
@@ -27,6 +31,15 @@ function escapeHTML(str: string): string {
     .replace(/'/g, '&#39;')
 }
 
+/**
+ * Builds the shadow-DOM tooltip markup for a professor.
+ * @param data - Normalized RMP professor payload.
+ * @param rgb - Optional course-header RGB triplet (`"r, g, b"` digits only).
+ *   Callers must pass a value from `getCourseRGB` or `HIGHLIGHT_FALLBACK_RGB`;
+ *   the string is interpolated into CSS unescaped, so arbitrary input is unsafe.
+ * @returns HTML string safe for assignment to `innerHTML` (review text escaped;
+ *   `rgb` is trusted per the precondition above).
+ */
 export function buildHTML(data: ProfessorData, rgb?: string): string {
   const reviewStyle = rgb
     ? `background: linear-gradient(rgba(${rgb}, 0.12), rgba(${rgb}, 0.12)), #181825;`

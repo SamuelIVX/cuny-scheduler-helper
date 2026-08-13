@@ -1,3 +1,6 @@
+/**
+ * TooltipManager unit tests — show/hide, pin-on-drag, and host reuse.
+ */
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { TooltipManager } from './tooltip-manager'
 import type { ProfessorData } from '../types'

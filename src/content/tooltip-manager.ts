@@ -1,9 +1,15 @@
+/**
+ * Manages the fixed-position Shadow DOM tooltip host: show/hide, drag-to-pin,
+ * and viewport-aware repositioning. Reuses an existing host if the content
+ * script reinjects.
+ */
 import type { ProfessorData } from '../types'
 import STYLES from './tooltip.css?inline'
 import { buildHTML } from './tooltip'
 
 const HOST_ID = 'cuny-helper-tooltip-host'
 
+/** Singleton-style controller for the floating professor tooltip. */
 export class TooltipManager {
   private host: HTMLElement | null = null
   private shadow: ShadowRoot | null = null
@@ -95,6 +101,12 @@ export class TooltipManager {
     document.body.appendChild(this.host)
   }
 
+  /**
+   * Renders professor data into the tooltip and positions it (unless pinned).
+   * @param data - Professor payload from the background worker.
+   * @param event - Mouse event or anchor element for initial placement.
+   * @param rgb - Optional course color tint forwarded to `buildHTML`.
+   */
   show(data: ProfessorData, event: MouseEvent | Element, rgb?: string) {
     this.init()
     if (this.hideTimer) {
@@ -127,6 +139,10 @@ export class TooltipManager {
     if (!this.isPinned) this.reposition()
   }
 
+  /**
+   * Schedules hiding the tooltip after a short delay (cancelled on re-enter).
+   * @param delayMs - Hide delay in milliseconds (default 150).
+   */
   hide(delayMs = 150) {
     if (this.hideTimer) clearTimeout(this.hideTimer)
     this.hideTimer = setTimeout(() => {

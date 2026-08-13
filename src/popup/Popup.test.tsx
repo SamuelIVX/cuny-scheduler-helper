@@ -1,3 +1,6 @@
+/**
+ * Popup behavior tests — clear-cache button against a mocked `chrome.storage`.
+ */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, fireEvent, act } from '@testing-library/react'
 import Popup from './Popup'

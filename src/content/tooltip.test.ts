@@ -1,3 +1,6 @@
+/**
+ * `buildHTML` unit tests — rating/grade colors, escaping, optional tint.
+ */
 import { describe, it, expect } from 'vitest'
 import { buildHTML } from './tooltip'
 import type { ProfessorData } from '../types'

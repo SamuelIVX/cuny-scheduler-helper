@@ -1,3 +1,9 @@
+/**
+ * Service worker — fetches RateMyProfessors GraphQL data, caches results in
+ * `chrome.storage.local` for 1 hour, and answers `FETCH_PROFESSOR` messages.
+ * SECURITY: uses RMP's public GraphQL endpoint with their documented dummy
+ * Basic auth (`test:test`); do not treat this as a real credential.
+ */
 import type { MessageRequest, MessageResponse, ProfessorData, Review } from '../types'
 
 const RMP_GRAPHQL_URL = 'https://www.ratemyprofessors.com/graphql'
@@ -81,6 +87,13 @@ type RmpSearchResponse = {
   }
 }
 
+/**
+ * Queries RMP for a professor and returns the best CUNY/school match.
+ * @param professorName - Instructor name scraped from Schedule Builder.
+ * @param schoolName - Campus/school string used to prefer a matching RMP school.
+ * @returns Normalized professor data, or null if no result is found, the fetch
+ *   throws, or the HTTP response is not OK. `response.json()` parse failures reject.
+ */
 async function fetchProfessorFromRMP(professorName: string, schoolName: string): Promise<ProfessorData | null> {
   let response: Response
 
@@ -142,6 +155,15 @@ async function fetchProfessorFromRMP(professorName: string, schoolName: string):
   }
 }
 
+/**
+ * Cache-aware professor lookup keyed by name + school + course.
+ * @param professorName - Instructor name.
+ * @param schoolName - School/campus for matching + cache key.
+ * @param courseCode - Course code included in the cache key.
+ * @returns Cached or freshly fetched professor data, or null if the lookup
+ *   returns no data. `chrome.storage.local` get/set failures and JSON parse
+ *   errors from `fetchProfessorFromRMP` reject (caught by the message listener).
+ */
 async function getProfessor(professorName: string, schoolName: string, courseCode: string): Promise<ProfessorData | null> {
   const cacheKey = `rmp::${professorName.toLowerCase()}::${schoolName.toLowerCase()}::${courseCode.toLowerCase()}`
 

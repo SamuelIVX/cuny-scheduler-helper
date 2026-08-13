@@ -1,3 +1,6 @@
+/**
+ * Popup accessibility smoke test using axe.
+ */
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { render } from '@testing-library/react'
 import axe from 'axe-core'
