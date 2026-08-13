@@ -9,11 +9,7 @@ import { SELECTORS, SKIP_NAMES, HIGHLIGHT_FALLBACK_RGB } from './constants'
 const tooltip = new TooltipManager()
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
 
-/**
- * Trims an element's text content, or "" when missing.
- * @param el - DOM node to read, or null.
- * @returns Trimmed text, or an empty string.
- */
+/** Trims an element's text content, or "" when missing. */
 function extractText(el: Element | null): string {
   return el?.textContent?.trim() ?? ''
 }
