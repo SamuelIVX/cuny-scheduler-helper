@@ -4,8 +4,9 @@
 import { useState, useEffect, useRef } from 'react'
 import './popup.css'
 
-/** Popup root component mounted from `src/main.tsx`.
- * @returns The popup panel with cache-clear control.
+/**
+ * Renders the extension popup panel (hover help + clear-cache control).
+ * Mounted from `src/main.tsx`.
  */
 export default function Popup() {
   const [clearing, setClearing] = useState(false)

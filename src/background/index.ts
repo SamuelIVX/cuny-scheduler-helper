@@ -162,6 +162,8 @@ async function fetchProfessorFromRMP(professorName: string, schoolName: string):
 
 /**
  * Cache-aware professor lookup keyed by name + school + course.
+ * SECURITY: persists instructor names and RMP payloads in `chrome.storage.local`;
+ * do not log cache keys or stored review bodies.
  * @param professorName - Instructor name.
  * @param schoolName - School/campus for matching + cache key.
  * @param courseCode - Course code included in the cache key.
