@@ -97,7 +97,7 @@ type RmpSearchResponse = {
  *   throws, or the HTTP response is not OK. `response.json()` parse failures reject.
  * @example
  * const data = await fetchProfessorFromRMP("Jane Doe", "College of Staten Island");
- * // => ProfessorData | null
+ * // null when RMP has no usable match
  */
 async function fetchProfessorFromRMP(professorName: string, schoolName: string): Promise<ProfessorData | null> {
   let response: Response

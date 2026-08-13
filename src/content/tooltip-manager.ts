@@ -106,7 +106,7 @@ export class TooltipManager {
    * @param data - Professor payload from the background worker.
    * @param event - Mouse event or anchor element for initial placement.
    * @param rgb - Optional course color tint forwarded to `buildHTML`.
-   * @returns Nothing — mutates the shadow-DOM host as a side effect.
+   * @returns Side effect: mutates the shadow-DOM host (show + optional reposition).
    * @example
    * manager.show(data, mouseEvent, "147, 153, 178");
    */
@@ -145,7 +145,7 @@ export class TooltipManager {
   /**
    * Schedules hiding the tooltip after a short delay (cancelled on re-enter).
    * @param delayMs - Hide delay in milliseconds (default 150).
-   * @returns Nothing — schedules a hide timer as a side effect.
+   * @returns Side effect: schedules a hide timer.
    * @example
    * manager.hide(); // hide after 150ms
    * manager.hide(0); // hide on the next timer tick
