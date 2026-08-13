@@ -34,8 +34,11 @@ function escapeHTML(str: string): string {
 /**
  * Builds the shadow-DOM tooltip markup for a professor.
  * @param data - Normalized RMP professor payload.
- * @param rgb - Optional course-header RGB used to tint the card.
- * @returns HTML string safe for assignment to `innerHTML` (values escaped).
+ * @param rgb - Optional course-header RGB triplet (`"r, g, b"` digits only).
+ *   Callers must pass a value from `getCourseRGB` or `HIGHLIGHT_FALLBACK_RGB`;
+ *   the string is interpolated into CSS unescaped, so arbitrary input is unsafe.
+ * @returns HTML string safe for assignment to `innerHTML` (review text escaped;
+ *   `rgb` is trusted per the precondition above).
  */
 export function buildHTML(data: ProfessorData, rgb?: string): string {
   const reviewStyle = rgb

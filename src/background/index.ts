@@ -91,7 +91,8 @@ type RmpSearchResponse = {
  * Queries RMP for a professor and returns the best CUNY/school match.
  * @param professorName - Instructor name scraped from Schedule Builder.
  * @param schoolName - Campus/school string used to prefer a matching RMP school.
- * @returns Normalized professor data, or null if none found / request failed.
+ * @returns Normalized professor data, or null if no result is found, the fetch
+ *   throws, or the HTTP response is not OK. `response.json()` parse failures reject.
  */
 async function fetchProfessorFromRMP(professorName: string, schoolName: string): Promise<ProfessorData | null> {
   let response: Response
@@ -159,7 +160,9 @@ async function fetchProfessorFromRMP(professorName: string, schoolName: string):
  * @param professorName - Instructor name.
  * @param schoolName - School/campus for matching + cache key.
  * @param courseCode - Course code included in the cache key.
- * @returns Cached or freshly fetched professor data, or null.
+ * @returns Cached or freshly fetched professor data, or null if the lookup
+ *   returns no data. `chrome.storage.local` get/set failures and JSON parse
+ *   errors from `fetchProfessorFromRMP` reject (caught by the message listener).
  */
 async function getProfessor(professorName: string, schoolName: string, courseCode: string): Promise<ProfessorData | null> {
   const cacheKey = `rmp::${professorName.toLowerCase()}::${schoolName.toLowerCase()}::${courseCode.toLowerCase()}`
