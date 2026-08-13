@@ -1,3 +1,7 @@
+/**
+ * Vite multi-entry build for the MV3 extension (popup, content, background).
+ * Strips `crossorigin` from popup HTML because Chrome rejects it on extension pages.
+ */
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { resolve } from 'path'

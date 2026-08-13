@@ -1,3 +1,7 @@
+/**
+ * DOM selectors and constants for CUNY Schedule Builder course cards.
+ * Inline comments document each selector's role in the live page markup.
+ */
 export const SELECTORS = {
   // Each course card in the legend/results panel
   courseRow: '.course_box',
@@ -15,6 +19,8 @@ export const SELECTORS = {
   courseTitle: 'h4.course_title',
 }
 
+/** Instructor labels that should not trigger an RMP lookup. */
 export const SKIP_NAMES = new Set(['staff', 'tba', 'to be announced', ''])
 
+/** Fallback row-highlight RGB when the course header color cannot be read. */
 export const HIGHLIGHT_FALLBACK_RGB = '147, 153, 178' // neutral grey-blue

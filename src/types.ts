@@ -1,3 +1,8 @@
+/**
+ * Shared message and RateMyProfessors payload types for content ↔ background IPC.
+ */
+
+/** A single recent RMP review shown in the tooltip. */
 export interface Review {
   comment: string
   date: string
@@ -8,6 +13,7 @@ export interface Review {
   difficultyRating: number
 }
 
+/** Normalized professor summary returned to the content script. */
 export interface ProfessorData {
   name: string
   avgRating: number | null
@@ -19,6 +25,7 @@ export interface ProfessorData {
   recentReviews: Review[]
 }
 
+/** Content → background request to look up a professor. */
 export interface MessageRequest {
   type: 'FETCH_PROFESSOR'
   professorName: string
@@ -26,6 +33,7 @@ export interface MessageRequest {
   courseCode: string
 }
 
+/** Background → content response wrapping `ProfessorData` or an error string. */
 export interface MessageResponse {
   success: boolean
   data?: ProfessorData
