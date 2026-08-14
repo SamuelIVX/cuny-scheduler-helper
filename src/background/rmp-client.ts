@@ -126,10 +126,10 @@ function mapReview(r: { node: RmpRatingNode }): Review {
  * @param schoolName - Campus/school string used to prefer a matching RMP school.
  * @returns Normalized professor data, or null if no result is found, the fetch
  *   throws, or the HTTP response is not OK. `response.json()` parse failures reject.
- * @example
- * const data = await client.fetchProfessor("Jane Doe", "College of Staten Island");
- * // null when RMP has no usable match
- */
+  * @example
+  * const data = await fetchProfessorFromRMP("Jane Doe", "College of Staten Island");
+  * // null when RMP has no usable match
+  */
 export async function fetchProfessorFromRMP(
   professorName: string,
   schoolName: string,
@@ -166,8 +166,13 @@ export async function fetchProfessorFromRMP(
   const match =
     edges.find((e) => {
       const s = (e.node.school?.name ?? '').toLowerCase()
-      return s.includes('cuny') || s.includes(normalizedSchool)
-    }) ?? edges[0]
+      return s.includes(normalizedSchool)
+    }) ??
+    edges.find((e) => {
+      const s = (e.node.school?.name ?? '').toLowerCase()
+      return s.includes('cuny')
+    }) ??
+    edges[0]
 
   const node = match.node
 
@@ -193,10 +198,10 @@ export async function fetchProfessorFromRMP(
  * @returns Cached or freshly fetched professor data, or null if the lookup
  *   returns no data. `chrome.storage.local` get/set failures and JSON parse
  *   errors from `fetchProfessorFromRMP` reject (caught by the message listener).
- * @example
- * const data = await client.getProfessor("Jane Doe", "CSI", "CSC 211");
- * // hits storage first, then RMP on miss/expiry
- */
+  * @example
+  * const data = await getProfessor("Jane Doe", "CSI", "CSC 211");
+  * // hits storage first, then RMP on miss/expiry
+  */
 export async function getProfessor(
   professorName: string,
   schoolName: string,

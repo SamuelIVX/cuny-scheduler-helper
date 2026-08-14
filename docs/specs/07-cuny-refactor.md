@@ -37,7 +37,7 @@
 
 ## Error behavior
 
-- Network/parse/storage failures propagate as rejected promises to the message listener, which maps them to `{ success: false, error: String(err) }`.
+- Storage failures propagate as rejected promises to the message listener, which maps them to `{ success: false, error: String(err) }`.
 
 ## Acceptance criteria
 
