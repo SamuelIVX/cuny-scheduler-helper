@@ -28,6 +28,7 @@
     "noFallthroughCasesInSwitch": true
   },
   "include": [
+    "vitest.setup.ts",
     "src"
   ]
 }
